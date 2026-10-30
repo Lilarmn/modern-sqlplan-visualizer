@@ -1,0 +1,74 @@
+<UserControl x:Class="SsmsPlanVisualizer.PlanVisualizerControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="700" d:DesignWidth="1100"
+             Background="#080C14">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Top SSMS Live DMV & Host Toolbar -->
+        <Border Grid.Row="0" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="0,0,0,1" Padding="10,6">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Connection Info Block -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,15,0">
+                    <TextBlock Text="Server:" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <TextBox x:Name="TxtServer" Width="140" Height="24" Background="#1E293B" Foreground="#F8FAFC" 
+                             BorderBrush="#334155" Padding="4,2" FontSize="11" Text="localhost" VerticalAlignment="Center"/>
+
+                    <TextBlock Text="DB:" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center" Margin="10,0,5,0"/>
+                    <TextBox x:Name="TxtDatabase" Width="100" Height="24" Background="#1E293B" Foreground="#F8FAFC" 
+                             BorderBrush="#334155" Padding="4,2" FontSize="11" Text="master" VerticalAlignment="Center"/>
+
+                    <Button x:Name="BtnDetectConn" Content="Detect Active" Height="24" Margin="6,0,0,0" Padding="8,2"
+                            Background="#334155" Foreground="#F1F5F9" BorderThickness="0" FontSize="11" Click="BtnDetectConn_Click"/>
+                </StackPanel>
+
+                <!-- Live SPID Polling Controls -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,15,0">
+                    <TextBlock Text="Target SPID:" Foreground="#94A3B8" FontSize="11" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <TextBox x:Name="TxtSpid" Width="55" Height="24" Background="#1E293B" Foreground="#F8FAFC" 
+                             BorderBrush="#334155" Padding="4,2" FontSize="11" Text="55" VerticalAlignment="Center"/>
+
+                    <Button x:Name="BtnRefreshSessions" Content="Scan Running" Height="24" Margin="5,0,0,0" Padding="6,2"
+                            Background="#1E293B" Foreground="#38BDF8" BorderBrush="#334155" FontSize="11" Click="BtnRefreshSessions_Click"/>
+
+                    <ComboBox x:Name="CmbRunningSessions" Width="180" Height="24" Margin="5,0,0,0" Background="#1E293B"
+                              Foreground="#F8FAFC" BorderBrush="#334155" FontSize="11" Visibility="Collapsed" SelectionChanged="CmbRunningSessions_SelectionChanged"/>
+
+                    <Button x:Name="BtnTogglePolling" Content="▶ Start Live Polling" Height="24" Margin="10,0,0,0" Padding="10,2"
+                            Background="#0284C7" Foreground="#FFFFFF" FontWeight="SemiBold" BorderThickness="0" FontSize="11" Click="BtnTogglePolling_Click"/>
+                </StackPanel>
+
+                <!-- Status Message -->
+                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
+                    <Ellipse x:Name="StatusDot" Width="8" Height="8" Fill="#64748B" Margin="0,0,6,0"/>
+                    <TextBlock x:Name="TxtStatus" Text="Ready (Standalone / Live DMV idle)" Foreground="#94A3B8" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+
+                <!-- File Action Controls -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="BtnOpenFile" Content="Open .sqlplan File" Height="24" Padding="10,2"
+                            Background="#1E293B" Foreground="#E2E8F0" BorderBrush="#334155" FontSize="11" Click="BtnOpenFile_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- WebView2 Host Browser Container -->
+        <wv2:WebView2 x:Name="MainWebView" Grid.Row="1" />
+    </Grid>
+</UserControl>

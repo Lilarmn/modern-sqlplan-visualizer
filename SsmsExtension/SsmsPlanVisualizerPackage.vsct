@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <Extern href="stdidcmd.h"/>
+  <Extern href="vsshlids.h"/>
+
+  <Commands package="guidSsmsPlanVisualizerPackage">
+    <Groups>
+      <Group guid="guidSsmsPlanVisualizerPackageCmdSet" id="ToolsMenuGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_TOOLS"/>
+      </Group>
+      <Group guid="guidSsmsPlanVisualizerPackageCmdSet" id="ViewMenuGroup" priority="0x0600">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_MENU_VIEW"/>
+      </Group>
+      <Group guid="guidSsmsPlanVisualizerPackageCmdSet" id="StandardToolbarGroup" priority="0x0800">
+        <Parent guid="guidSHLMainMenu" id="IDM_VS_TOOL_STANDARD"/>
+      </Group>
+    </Groups>
+
+    <Buttons>
+      <Button guid="guidSsmsPlanVisualizerPackageCmdSet" id="cmdidPlanVisualizerTools" priority="0x0100" type="Button">
+        <Parent guid="guidSsmsPlanVisualizerPackageCmdSet" id="ToolsMenuGroup" />
+        <Strings>
+          <ButtonText>SQL Execution Plan Visualizer</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidSsmsPlanVisualizerPackageCmdSet" id="cmdidPlanVisualizerView" priority="0x0100" type="Button">
+        <Parent guid="guidSsmsPlanVisualizerPackageCmdSet" id="ViewMenuGroup" />
+        <Strings>
+          <ButtonText>SQL Execution Plan Visualizer</ButtonText>
+        </Strings>
+      </Button>
+
+      <Button guid="guidSsmsPlanVisualizerPackageCmdSet" id="cmdidPlanVisualizerToolbar" priority="0x0100" type="Button">
+        <Parent guid="guidSsmsPlanVisualizerPackageCmdSet" id="StandardToolbarGroup" />
+        <Strings>
+          <ButtonText>SQL Plan Visualizer</ButtonText>
+        </Strings>
+      </Button>
+    </Buttons>
+  </Commands>
+
+  <Symbols>
+    <GuidSymbol name="guidSsmsPlanVisualizerPackage" value="{e4a7d620-8332-4740-b6ec-7d0e808169e5}" />
+    <GuidSymbol name="guidSsmsPlanVisualizerPackageCmdSet" value="{8a97c45d-7a6e-4122-bc51-0985223c348f}">
+      <IDSymbol name="ToolsMenuGroup" value="0x1020" />
+      <IDSymbol name="ViewMenuGroup" value="0x1021" />
+      <IDSymbol name="StandardToolbarGroup" value="0x1022" />
+      <IDSymbol name="cmdidPlanVisualizerTools" value="0x0100" />
+      <IDSymbol name="cmdidPlanVisualizerView" value="0x0101" />
+      <IDSymbol name="cmdidPlanVisualizerToolbar" value="0x0102" />
+    </GuidSymbol>
+  </Symbols>
+</CommandTable>
