@@ -10,6 +10,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178c6.svg?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-5.4-646cff.svg?style=flat-square&logo=vite)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8.svg?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
+[![Donate with Reymit](https://img.shields.io/badge/Reymit-حمایت_مالی-00c853.svg?style=flat-square)](https://reymit.ir/lilarmn)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
 
 <br />
@@ -19,7 +20,8 @@
 [Interactive Walkthrough](#-feature-deep-dive) •
 [Architecture](#-architecture) •
 [Getting Started](#-getting-started) •
-[Engine Heuristics](#-anti-patterns-detected)
+[Engine Heuristics](#-anti-patterns-detected) •
+[Support / دونیت](#-support--حمایت-مالی)
 
 <br />
 
@@ -186,6 +188,20 @@ Select any operator to open the high-density diagnostic drawer. View side-by-sid
 - **Styling:** [Tailwind CSS v3.4](https://tailwindcss.com/)
 - **Build Tool:** [Vite v5](https://vitejs.dev/)
 - **Host Bridge (Optional):** .NET Framework 4.8.1 VSIX Extension for SSMS 19/20 via Microsoft Edge WebView2
+
+---
+
+## ☕ Support / حمایت مالی
+
+اگر این ابزار به بهینه‌سازی کوئری‌های SQL شما کمک کرده یا در عیب‌یابی پلن‌های اجرایی پیچیده مفید بوده است، می‌توانید از توسعه و نگهداری مداوم آن حمایت کنید:
+
+<div align="center">
+  <a href="https://reymit.ir/lilarmn" target="_blank">
+    <img src="https://img.shields.io/badge/Reymit-حمایت_ریالی_از_پروژه-00c853?style=for-the-badge&logo=contactless-payment&logoColor=white" alt="Reymit Donation" />
+  </a>
+  <br />
+  <p><strong>لینک درگاه حمایت ریالی (کارت‌های عضو شتاب):</strong> <a href="https://reymit.ir/lilarmn">https://reymit.ir/lilarmn</a></p>
+</div>
 
 ---
 
