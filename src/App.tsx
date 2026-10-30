@@ -22,8 +22,20 @@ import {
 
 export function App() {
   const [xmlContent, setXmlContent] = useState<string>(SAMPLE_SQLPLAN_XML);
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
-  const [filterMode, setFilterMode] = useState<ViewFilterMode>('all');
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search).get('node');
+      return p || null;
+    }
+    return null;
+  });
+  const [filterMode, setFilterMode] = useState<ViewFilterMode>(() => {
+    if (typeof window !== 'undefined') {
+      const m = new URLSearchParams(window.location.search).get('mode') as ViewFilterMode;
+      if (m && ['all', 'heatmap', 'skew', 'focus'].includes(m)) return m;
+    }
+    return 'all';
+  });
   const [direction, setDirection] = useState<LayoutDirection>('LR');
   const [autoCollapse, setAutoCollapse] = useState<boolean>(true);
   const [isPasteModalOpen, setIsPasteModalOpen] = useState<boolean>(false);

@@ -1,140 +1,200 @@
-# SQL Server Execution Plan Visualizer & Bottleneck Analyzer
+<div align="center">
 
-A modern, production-grade SQL Server Execution Plan Visualizer designed to run both as a **standalone web application** (for analyzing `.sqlplan` XML files) and inside **SQL Server Management Studio (SSMS 19 & 20)** as a VSIX extension hosting Microsoft Edge WebView2.
+# SQL Plan Studio
+### Modern SQL Server Execution Plan Visualizer & Bottleneck Engine
+
+**A modern, high-density SQL Server Execution Plan visualizer and query tuning workbench designed to replace the legacy SSMS plan viewer.**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)](LICENSE)
+[![React 18](https://img.shields.io/badge/React-18.3-61dafb.svg?style=flat-square&logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178c6.svg?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.4-646cff.svg?style=flat-square&logo=vite)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8.svg?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
+
+<br />
+
+[Features](#-key-features) •
+[Why Not Native SSMS?](#-why-native-ssms-viewer-fails) •
+[Interactive Walkthrough](#-feature-deep-dive) •
+[Architecture](#-architecture) •
+[Getting Started](#-getting-started) •
+[Engine Heuristics](#-anti-patterns-detected)
+
+<br />
+
+<img src="docs/screenshots/hero-overview.png" alt="SQL Plan Studio Overview" width="100%" style="border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 20px 50px rgba(0,0,0,0.6);" />
+
+</div>
+
+<br />
 
 ---
 
-## Key Flaws in Native SSMS & How We Solve Them
+## ⚡ Why Native SSMS Viewer Fails
 
-| Native SSMS Execution Plan Viewer | Our Execution Plan Visualizer |
+The built-in SQL Server Management Studio (SSMS) Execution Plan viewer was designed over two decades ago and contains critical engineering limitations that mislead database administrators and software engineers:
+
+| Limitation in Native SSMS | How SQL Plan Studio Solves It |
 | :--- | :--- |
-| **Hides True Bottlenecks:** Calculates "Operator Cost %" using *Estimated Subtree Cost*, even in Actual Plans. | **True Cost Isolation:** Calculates **True Actual Cost %** by measuring each node's exclusive CPU ms and Logical Reads relative to total query runtime. |
-| **Cluttered Trees:** Large procedures generate 100+ node trees that require endless horizontal panning. | **Auto-Collapse Healthy Subtrees:** Subtrees of >= 3 nodes with cumulative cost < 2% and no warnings are collapsed into clean summary badges. |
-| **Buried Warnings:** Critical warnings (TempDB spills, implicit conversions) are buried in tiny tooltips. | **High-Visibility Radar & Badges:** Immediate pulsing badges, Top 5 Bottleneck Navigator bar, and actionable DBA / T-SQL tuning advice. |
-| **Static Snapshots:** Can only view plans after a query finishes. | **Live DMV Poller:** Streams real-time live execution plans via `sys.dm_exec_query_statistics_xml` and `sys.dm_exec_query_profiles` every 500ms. |
+| **Estimated Cost Illusion**<br>Native SSMS calculates "Operator Cost %" using *Estimated Subtree Cost*, even when viewing an *Actual Execution Plan*. A node displaying 80% cost may have executed in 2ms, while a 0% node burned 90% of total query runtime. | **True Exclusive Runtime Cost**<br>Recalculates True Actual Cost % by isolating each operator's exclusive CPU milliseconds and Logical Storage Reads relative to the entire query runtime. |
+| **Massive Tree Clutter**<br>Complex stored procedures and view hierarchies produce 80–150+ node sprawling graphs that require endless horizontal scrolling and manual inspection. | **Auto-Collapse Healthy Subtrees**<br>Identifies low-cost subtrees (&ge; 3 nodes, cumulative cost &lt; 2%, zero warnings) and auto-collapses them into compact abstraction badges. |
+| **Buried Engine Warnings**<br>Devastating runtime hazards (TempDB spills, implicit type conversions, massive CE skews) are hidden inside tiny tooltips. | **High-Visibility Radar & Badges**<br>Surface anti-pattern chips with direct visual indicators, ranked bottleneck radar, and a proportional flame strip. |
+| **No Remediation Guidance**<br>SSMS displays the symptom but provides zero DBA tuning advice or remediation steps. | **Actionable DBA / T-SQL Advice**<br>Generates concrete, copyable T-SQL statements (e.g., `UPDATE STATISTICS WITH FULLSCAN`, covering index syntax, matching parameter types). |
 
 ---
 
-## Architecture Overview
+## 📸 Feature Deep Dive
+
+### 1. Proportional Query Cost Distribution Strip & Bottleneck Radar
+Instantly pinpoint where 100% of query runtime was spent. The interactive flame strip divides execution time proportionally across all query operators. Clicking any segment automatically focuses and centers that operator on the canvas.
+
+<div align="center">
+  <img src="docs/screenshots/heatmap-mode.png" alt="Heatmap Mode & Bottleneck Radar" width="100%" style="border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.08);" />
+</div>
+
+<br />
+
+### 2. Slide-Over Diagnostic Inspector & Actionable T-SQL Fixes
+Select any operator to open the high-density diagnostic drawer. View side-by-side metric matrices (Actual vs. Estimated), examine parallel thread distribution skews, and copy tested T-SQL index or query adjustments directly to your clipboard.
+
+<div align="center">
+  <img src="docs/screenshots/inspector-tuning.png" alt="Node Inspector Drawer & T-SQL Tuning Advice" width="100%" style="border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.08);" />
+</div>
+
+---
+
+## 🛠 Key Features
+
+- **DOMParser ShowPlanXML Engine (`showplanParser.ts`):** Ingests raw `.sqlplan` XML natively in the browser without server roundtrips. Parses runtime threads, memory grants, wait stats, seek predicates, and target indexes.
+- **Exclusive Cost Calculation:** Accurately isolates parent-child execution overhead, handling blocking vs. streaming operators (Hash Join vs. Nested Loops).
+- **Logarithmic Flow Conduits:** Variable-bore bezier conduits dynamically scale pipe thickness from 1.5px to 5px based on actual row throughput with animated directional particles.
+- **In-Plan Fast Search (`Ctrl+F`):** Search operators by physical op, logical op, table, or index name with match counter and keyboard navigation.
+- **Segmented View Modes:**
+  - `Standard`: Clean high-density diagram.
+  - `Heatmap`: Color-coded by true CPU and I/O consumption.
+  - `CE Skew`: Pinpoints cardinality estimation discrepancies.
+  - `Dim Low Cost`: Dims healthy nodes to isolate bottleneck paths.
+- **Dual Flow Layout:** Toggle between **Data Flow (Left to Right)** and **SSMS Standard (Right to Left)** with one click.
+- **Export Diagnostic Reports:** Download complete bottleneck audits as structured JSON for team reviews and CI/CD benchmarks.
+
+---
+
+## 🧠 Anti-Patterns Detected
+
+| Warning Type | Severity | Engine Condition | Actionable Remediation |
+| :--- | :---: | :--- | :--- |
+| **TempDB Spill** | `CRITICAL` | Sort or Hash Match operator ran out of memory grant and spilled execution rows to TempDB storage. | Update statistics with fullscan, adjust memory grant hints (`MIN_GRANT_PERCENT`), or add a supporting index. |
+| **Implicit Conversion** | `CRITICAL` | `CONVERT_IMPLICIT` applied to a filtered table column, forcing a clustered index scan instead of an index seek. | Align parameter and application variable data types with table column definitions (e.g., `VARCHAR` vs `NVARCHAR`). |
+| **Cardinality Skew** | `CRITICAL` / `WARNING` | Optimizer estimated vs. runtime row count delta exceeds 10x with &gt; 1,000 rows. | Update stale table statistics or create filtered statistics to resolve parameter sniffing or correlation skews. |
+| **Excessive Key Lookups** | `WARNING` | Non-clustered index seek followed by &gt; 100 executions of Key/RID lookups on the base clustered index. | Create a covering index using `INCLUDE (col1, col2)` to eliminate point lookups. |
+| **Parallel Thread Skew** | `WARNING` | Workload unevenly distributed across threads (e.g., Thread 0 processed &gt; 90% of rows while other threads sat idle). | Resolve data distribution skews or evaluate `MAXDOP` settings. |
+| **Missing Join Predicate** | `CRITICAL` | Query executed an unintentional Cartesian cross product between tables. | Add explicit `ON` join predicates or evaluate subquery correlations. |
+
+---
+
+## 🏗 Architecture
 
 ```
-                      ┌───────────────────────────────────────────────┐
-                      │                 SSMS 19 / 20                  │
-                      │  ┌─────────────────────────────────────────┐  │
-                      │  │   PlanVisualizerToolWindow (WPF / C#)   │  │
-                      │  │                                         │  │
-                      │  │  ┌───────────────────────────────────┐  │  │
-                      │  │  │         WebView2 Control          │  │  │
-                      │  │  │                                   │  │  │
-                      │  │  │   React 18 + TS + React Flow UI   │  │  │
-                      │  │  │   - Pipeline Canvas (Dagre LR/RL) │  │  │
-                      │  │  │   - Top 5 Bottleneck Navigator    │  │  │
-                      │  │  │   - Node Inspector Drawer         │  │  │
-                      │  │  │   - CE Skew Radar & Heatmap       │  │  │
-                      │  │  └─────────────────▲─────────────────┘  │  │
-                      │  └────────────────────┼────────────────────┘  │
-                      │                       │ PostWebMessageAsJson  │
-                      │  ┌────────────────────▼────────────────────┐  │
-                      │  │       WebViewBridgeService (C#)         │  │
-                      │  └────────────────────▲────────────────────┘  │
-                      │                       │                       │
-                      │  ┌────────────────────┴────────────────────┐  │
-                      │  │        LiveDmvPoller (500ms async)      │  │
-                      │  └────────────────────▲────────────────────┘  │
-                      └───────────────────────┼───────────────────────┘
-                                              │ SqlConnection
-                                              ▼
-                                 ┌─────────────────────────┐
-                                 │       SQL Server        │
-                                 │ dm_exec_query_statistics│
-                                 │ dm_exec_query_profiles  │
-                                 └─────────────────────────┘
+                               ┌─────────────────────────────────┐
+                               │     Raw .sqlplan XML Source     │
+                               │   (File Drop / Paste / SSMS)    │
+                               └────────────────▲────────────────┘
+                                                │
+                                                ▼
+                               ┌─────────────────────────────────┐
+                               │   ShowPlanXML Browser Parser    │
+                               │   - Native DOMParser Engine     │
+                               │   - Thread Metrics Accumulation │
+                               │   - Exclusive Cost Isolation    │
+                               └────────────────▲────────────────┘
+                                                │
+                                                ▼
+                               ┌─────────────────────────────────┐
+                               │   Heuristic Bottleneck Engine   │
+                               │   - True Cost % Scoring (0-100) │
+                               │   - CE Skew Ratio Calculation   │
+                               │   - Anti-Pattern Diagnosis      │
+                               │   - Auto-Collapse Evaluator     │
+                               └────────────────▲────────────────┘
+                                                │
+                                                ▼
+       ┌─────────────────────────────────────────────────────────────────────────────────┐
+       │                                Modern Frontend UI                               │
+       │                                                                                 │
+       │   ┌─────────────────────┐   ┌─────────────────────┐   ┌─────────────────────┐   │
+       │   │  Studio Top Header  │   │  Proportional Flame │   │   Pipeline Canvas   │   │
+       │   │  - Plan Search      │   │  - Cost Allocator   │   │   - React Flow      │   │
+       │   │  - View Filters     │   │  - Top Bottlenecks  │   │   - Dagre Layout    │   │
+       │   │  - Layout Direction │   │  - Quick Jump       │   │   - Custom Nodes    │   │
+       │   └─────────────────────┘   └─────────────────────┘   └─────────────────────┘   │
+       │                                                                                 │
+       │   ┌─────────────────────────────────────────────────────────────────────────┐   │
+       │   │                         Slide-Over Node Inspector                       │   │
+       │   │   [Tuning Advice]    [Metrics Matrix]    [Parallel Threads]    [Preds]  │   │
+       │   └─────────────────────────────────────────────────────────────────────────┘   │
+       └─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Directory Structure
+## 🚀 Getting Started
 
-```
-d:\prozhe\OTHERS\SSMS_EXTENSION\
-├── src/                                  # Frontend React 18 + TypeScript Visualizer
-│   ├── types/plan.ts                     # Execution plan, metrics & warning models
-│   ├── parser/showplanParser.ts          # Browser-native DOMParser ShowPlanXML engine
-│   ├── analyzer/bottleneckAnalyzer.ts    # Exclusive cost scoring, skew radar & tuning advice
-│   ├── bridge/webviewBridge.ts           # Bidirectional WebView2 host communication bridge
-│   ├── data/samplePlan.ts                # Built-in 18-node realistic demo plan with bottlenecks
-│   ├── utils/formatters.ts               # Number, ms, bytes, and identifier formatters
-│   ├── components/
-│   │   ├── nodes/OperatorNode.tsx        # Custom React Flow operator card with dual progress bar
-│   │   ├── nodes/CollapsedSubtreeNode.tsx# Summary node for collapsed healthy subtrees
-│   │   ├── edges/DataFlowEdge.tsx        # Logarithmically scaled animated streaming edge
-│   │   ├── BottleneckBar.tsx             # Top 5 Bottleneck quick-navigator
-│   │   ├── NodeInspector.tsx             # Slide-over inspector drawer with thread skew chart
-│   │   ├── Toolbar.tsx                   # Heatmap, Skew Radar, Focus Mode & Direction toggles
-│   │   ├── XmlPasteModal.tsx             # Modal to paste raw XML or drop .sqlplan files
-│   │   └── PipelineCanvas.tsx            # React Flow canvas with Dagre hierarchical layout
-│   ├── App.tsx                           # Root application component
-│   └── main.tsx                          # Application bootstrap
-├── dist/                                 # Production build bundled into VSIX
-├── SsmsExtension/                        # .NET Framework 4.8 C# VSIX Extension
-│   ├── SsmsExtension.csproj              # VSIX MSBuild project file
-│   ├── source.extension.vsixmanifest     # Targets SSMS 19/20 (Visual Studio 2022 Shell)
-│   ├── SsmsPlanVisualizerPackage.cs      # AsyncPackage entry point
-│   ├── PlanVisualizerCommand.cs          # SSMS Menu command
-│   ├── PlanVisualizerToolWindow.cs       # ToolWindow hosting WPF control
-│   ├── PlanVisualizerControl.xaml        # WPF UI with SPID selector & WebView2
-│   ├── PlanVisualizerControl.xaml.cs     # Code-behind connecting WebView2 & DMV Poller
-│   ├── Models/
-│   │   ├── BridgeMessages.cs             # Strongly-typed JSON DTOs
-│   │   └── LiveOperatorProfile.cs        # DMV query profile row representation
-│   └── Services/
-│       ├── LiveDmvPoller.cs              # 500ms async DMV polling engine
-│       ├── SsmsActiveConnectionService.cs# Reflection-based active window connection discovery
-│       └── WebViewBridgeService.cs       # CoreWebView2 JSON messaging coordinator
-└── package.json                          # Vite + React + Tailwind + React Flow setup
-```
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v18.0 or later)
+- Modern web browser (Chrome, Edge, Firefox, Safari)
+
+### Installation & Run
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Lilarmn/modern-sqlplan-visualizer.git
+   cd modern-sqlplan-visualizer
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+
+4. **Open in browser:**
+   Navigate to [http://localhost:3000](http://localhost:3000).
+
+> **Windows Quick Launch:** Double-click [`Run-PlanVisualizer-Web.bat`](Run-PlanVisualizer-Web.bat) to launch the dev server and open your browser automatically.
 
 ---
 
-## Building and Running
+## ⌨️ Pro Tips & Shortcuts
 
-### 1. Web Application (Standalone Browser Mode)
-
-To run the local development server:
-```bash
-npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) in your browser. The app loads with a built-in realistic demo execution plan containing:
-- Hash Match with TempDB Spill across 4 threads
-- Nested Loops driving a Key Lookup executed 120,000 times
-- Clustered Index Scan with `CONVERT_IMPLICIT` preventing Index Seek
-- Severe Cardinality Skew (100 estimated vs 450,000 actual rows)
-- Parallel thread distribution skew (Thread 1 doing ~84% of all row reads)
-- A 3-node dimension join subtree auto-collapsed (<2% runtime).
-
-To build production assets:
-```bash
-npm run build
-```
-This generates the optimized bundle in `dist/`.
-
-### 2. SSMS VSIX Extension (.NET 4.8 / Visual Studio 2022)
-
-1. Open `SsmsExtension/SsmsExtension.csproj` in **Visual Studio 2022** (with Visual Studio Extension Development workload installed).
-2. Ensure you have run `npm run build` in the root folder so that `dist/index.html` and assets exist. The `.csproj` automatically bundles all files from `..\dist\` into the `.vsix` output container.
-3. Select **Release | Any CPU** and click **Build Solution**.
-4. Visual Studio creates `bin\Release\SsmsPlanVisualizer.vsix`.
-5. Double-click `SsmsPlanVisualizer.vsix` to install into SSMS 19 or SSMS 20, or copy the output folder to the SSMS Extensions directory:
-   `%ProgramFiles(x86)%\Microsoft SQL Server Management Studio 19\Common7\IDE\Extensions\`
+- **Find in Plan (`Find` Bar):** Type any table name (e.g. `Orders`), index name, operator name (e.g. `Hash Match`), or node ID (`#3`) to cycle through matching operators.
+- **Ruler Quick Jump:** Click any segment in the top **Query cost distribution** strip to immediately focus and zoom to that operator.
+- **Inspect Operator:** Click any operator card on the canvas to open the detailed diagnostic drawer.
+- **Copy T-SQL Fix:** Click the `Copy` button inside the Inspector to copy ready-to-run DBA index and query scripts.
+- **Auto-Collapse Toggle:** Turn off `Auto-collapse` in the toolbar to inspect every node in low-cost dimension lookup subtrees.
 
 ---
 
-## SQL Server Prerequisites for Live DMV Polling
+## 📦 Tech Stack
 
-For live execution plan streaming, the target SQL Server instance must have:
-1. **Lightweight Query Profiling (LWP):**
-   - Enabled by default in **SQL Server 2019 and SQL Server 2022**.
-   - For SQL Server 2016 SP1 / 2017: Enable trace flag `7412` via `DBCC TRACEON(7412, -1)` or database scoped configuration `ALTER DATABASE SCOPED CONFIGURATION SET LIGHTWEIGHT_QUERY_PROFILING = ON;`.
-2. **Permissions:**
-   - SQL Server 2022+: `GRANT VIEW SERVER PERFORMANCE STATE TO [User];`
-   - SQL Server 2016 - 2019: `GRANT VIEW SERVER STATE TO [User];`
+- **Framework:** [React 18](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
+- **Graph Visualization:** [@xyflow/react](https://reactflow.dev/) (React Flow v12) + [Dagre](https://github.com/dagrejs/dagre)
+- **Styling:** [Tailwind CSS v3.4](https://tailwindcss.com/)
+- **Build Tool:** [Vite v5](https://vitejs.dev/)
+- **Host Bridge (Optional):** .NET Framework 4.8.1 VSIX Extension for SSMS 19/20 via Microsoft Edge WebView2
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+  <sub>Built with precision for database administrators, data engineers, and SQL Server performance architects.</sub>
+</div>
